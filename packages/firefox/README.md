@@ -15,16 +15,12 @@ From this directory:
 ```sh
 ./scripts/build.sh       # builds simple-browser-manager-firefox:latest
 ./scripts/run.sh         # starts container on PORT (default 3000)
-
-# In another shell:
-node examples/client.mjs # → "Example Domain"
 ```
 
 Or with the package's compose:
 
 ```sh
 docker compose up -d --build
-node examples/client.mjs
 ```
 
 Or use the monorepo root compose to run **all** browsers together:
@@ -46,7 +42,7 @@ await page.goto('https://example.com');
 console.log(await page.title());
 ```
 
-Your app must install **`playwright >= 1.49.0`** to match the server protocol. Major-version mismatches will refuse to connect. **Use `firefox.connect(...)`, not `chromium.connect(...)`.**
+Your app must install **`playwright` at the same minor version as the server's `PLAYWRIGHT_VERSION`** (patches within a minor are interchangeable). The server currently defaults to `1.49.1`; your client must be `^1.49.0`. Major/minor mismatches return `HTTP 428 Precondition Required`. **Use `firefox.connect(...)`, not `chromium.connect(...)`.**
 
 ## Configuration
 
@@ -64,7 +60,7 @@ PORT=4000 docker compose up -d
 ## What's inside the image
 
 - `node:22-bookworm-slim` base.
-- Playwright `1.49.1` npm package.
+- Playwright **at the version pinned by `PLAYWRIGHT_VERSION`** (default `1.49.1`, set via the Dockerfile `ARG` — independent of any package.json).
 - **Only** Firefox in `/ms-playwright/firefox-*`. No Chromium, no WebKit.
 - The Firefox runtime dep set for Debian bookworm (libgtk-3, libnss, libpango, libcairo, X11 client libs, Wayland clients, etc.).
 - `tini` as PID 1 for clean signal forwarding.
@@ -77,6 +73,17 @@ Final image size: roughly comparable to the Chromium one (~800–900 MB); Firefo
 - Firefox requires GTK 3, Pango/Cairo, and Wayland client libs at runtime — Chromium-headless-shell does not. That's why this image isn't dramatically smaller than the Chromium one despite Firefox's binary being ~5× smaller.
 - We deliberately omit the `playwright install-deps` extras (font packages, `xvfb`) — they are not required for headless operation.
 
+### Bumping the Playwright version
+
+The version is pinned at the **Docker layer**, not in any package.json:
+
+```sh
+# Either edit the default ARG in this Dockerfile, or pass at build time:
+docker build --build-arg PLAYWRIGHT_VERSION=1.55.0 -t simple-browser-manager-firefox:1.55.0 .
+```
+
+When you bump the server version, **clients must also bump to the same minor** — including the test client in `packages/end-to-end/`.
+
 ### Chromium/WebKit status
 
 - No Chromium or WebKit **binaries** are installed — only Firefox lives in `/ms-playwright/`.
@@ -84,23 +91,31 @@ Final image size: roughly comparable to the Chromium one (~800–900 MB); Firefo
 
 ## Smoke test
 
-`scripts/smoke.sh` builds the image, starts it on `SMOKE_PORT` (default 3000), waits for `http://…/`, then runs `examples/client.mjs` against it.
+`scripts/smoke.sh` builds the image, starts it on `SMOKE_PORT` (default 3000), waits for `http://…/` to return `Running`, and verifies a WebSocket upgrade is accepted (HTTP 101).
 
 ```sh
 ./scripts/smoke.sh
 ```
 
-## Upgrade Playwright
+This does **not** launch a browser — that's the job of [`packages/end-to-end/`](../end-to-end/), which performs a full headless browser test against this image.
 
-1. Bump the version in `package.json`.
-2. `npm install` (regenerates `package-lock.json`).
-3. `./scripts/build.sh`.
+## End-to-end test
+
+From the monorepo:
+
+```sh
+cd packages/end-to-end
+npm install
+./scripts/test-firefox.sh   # or: npm run firefox
+```
+
+This builds the firefox image, starts a container, connects with `firefox.connect()`, navigates to `https://example.com`, and prints `Example Domain`. Run this before releases.
 
 ## Troubleshooting
 
 - **"Firefox failed to launch"** — a runtime library is missing. The Dockerfile installs the Debian bookworm Firefox dep set explicitly (verified against `ldd` on `libxul.so`); if you forked the Dockerfile, re-run `./scripts/build.sh` and confirm the `apt-get install` line succeeded.
 - **Port already in use** — change `PORT` (e.g. `PORT=4000 ./scripts/run.sh`).
-- **Client can't connect / version mismatch** — confirm your app's `playwright` is `^1.49.0`. Use `firefox.connect(...)`, not `chromium.connect(...)`.
+- **Client can't connect / version mismatch** — confirm your app's `playwright` matches the server's minor (currently `^1.49.0`). Use `firefox.connect(...)`, not `chromium.connect(...)`.
 - **Plain HTTP shows "Running"** — that's the health marker the server returns to non-WebSocket requests. A WS upgrade returns `101 Switching Protocols`.
 
 ## Limitations / out of scope

@@ -1,0 +1,17 @@
+{
+  "name": "@simple-browser-manager/end-to-end",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "chromium": "./scripts/test-chromium.sh",
+    "firefox": "./scripts/test-firefox.sh",
+    "test": "./scripts/test-all.sh"
+  },
+  "devDependencies": {
+    "playwright": "1.49.1"
+  }
+}

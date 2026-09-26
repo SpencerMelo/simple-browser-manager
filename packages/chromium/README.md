@@ -15,16 +15,12 @@ From this directory:
 ```sh
 ./scripts/build.sh       # builds simple-browser-manager-chromium:latest
 ./scripts/run.sh         # starts container on PORT (default 3000)
-
-# In another shell:
-node examples/client.mjs # → "Example Domain"
 ```
 
 Or with the package's compose:
 
 ```sh
 docker compose up -d --build
-node examples/client.mjs
 ```
 
 Or use the monorepo root compose to run **all** browsers together:
@@ -46,7 +42,7 @@ await page.goto('https://example.com');
 console.log(await page.title());
 ```
 
-Your app must install **`playwright >= 1.49.0`** to match the server protocol. Major-version mismatches will refuse to connect.
+Your app must install **`playwright` at the same minor version as the server's `PLAYWRIGHT_VERSION`** (patches within a minor are interchangeable). The server currently defaults to `1.49.1`; your client must be `^1.49.0`. Major/minor mismatches return `HTTP 428 Precondition Required`.
 
 ## Configuration
 
@@ -64,12 +60,23 @@ PORT=4000 docker compose up -d
 ## What's inside the image
 
 - `node:22-bookworm-slim` base.
-- Playwright `1.49.1` npm package.
+- Playwright **at the version pinned by `PLAYWRIGHT_VERSION`** (default `1.49.1`, set via the Dockerfile `ARG` — independent of any package.json).
 - **Only** `chromium-headless-shell` and `ffmpeg` in `/ms-playwright/`. No Firefox, no WebKit, no full Chromium binary.
 - The Chromium runtime dep set for Debian bookworm (libnss, libatk, libxcomposite, etc.).
 - `tini` as PID 1 for clean signal forwarding.
 
 Final image size: **~866 MB** (down from ~1.6 GB on first cut; the savings come from using `playwright install --only-shell chromium`, which skips the full Chromium binary since `run-server` is headless-only).
+
+### Bumping the Playwright version
+
+The version is pinned at the **Docker layer**, not in any package.json:
+
+```sh
+# Either edit the default ARG in this Dockerfile, or pass at build time:
+docker build --build-arg PLAYWRIGHT_VERSION=1.55.0 -t simple-browser-manager-chromium:1.55.0 .
+```
+
+When you bump the server version, **clients must also bump to the same minor** — including the test client in `packages/end-to-end/`.
 
 ### Firefox/WebKit status
 
@@ -78,23 +85,31 @@ Final image size: **~866 MB** (down from ~1.6 GB on first cut; the savings come 
 
 ## Smoke test
 
-`scripts/smoke.sh` builds the image, starts it on `SMOKE_PORT` (default 3000), waits for `http://…/`, then runs `examples/client.mjs` against it.
+`scripts/smoke.sh` builds the image, starts it on `SMOKE_PORT` (default 3000), waits for `http://…/` to return `Running`, and verifies a WebSocket upgrade is accepted (HTTP 101).
 
 ```sh
 ./scripts/smoke.sh
 ```
 
-## Upgrade Playwright
+This does **not** launch a browser — that's the job of [`packages/end-to-end/`](../end-to-end/), which performs a full headless browser test against this image.
 
-1. Bump the version in `package.json`.
-2. `npm install` (regenerates `package-lock.json`).
-3. `./scripts/build.sh`.
+## End-to-end test
+
+From the monorepo:
+
+```sh
+cd packages/end-to-end
+npm install
+./scripts/test-chromium.sh   # or: npm run chromium
+```
+
+This builds the chromium image, starts a container, connects with `chromium.connect()`, navigates to `https://example.com`, and prints `Example Domain`. Run this before releases.
 
 ## Troubleshooting
 
 - **"Chromium failed to launch"** — a runtime library is missing. The Dockerfile installs the Debian bookworm Chromium dep set explicitly; if you forked the Dockerfile, re-run `./scripts/build.sh` and confirm the `apt-get install` line succeeded.
 - **Port already in use** — change `PORT` (e.g. `PORT=4000 ./scripts/run.sh`).
-- **Client can't connect / version mismatch** — confirm your app's `playwright` is `^1.49.0`. The server logs the negotiated protocol version on first connect.
+- **Client can't connect / version mismatch** — confirm your app's `playwright` matches the server's minor (currently `^1.49.0`). The server returns `HTTP 428 Playwright version mismatch` on connect failure.
 - **Plain HTTP shows "Running"** — that's the health marker the server returns to non-WebSocket requests. A WS upgrade returns `101 Switching Protocols`.
 
 ## Limitations / out of scope

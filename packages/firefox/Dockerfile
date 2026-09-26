@@ -1,6 +1,12 @@
 # syntax=docker/dockerfile:1
 FROM node:22-bookworm-slim
 
+# Playwright version pinned at build time. To bump, either edit the default
+# below or pass `--build-arg PLAYWRIGHT_VERSION=X.Y.Z` at build time.
+# This is the **server's** Playwright version — clients connecting via
+# `firefox.connect()` must share the same minor (^X.Y.0).
+ARG PLAYWRIGHT_VERSION=1.49.1
+
 # Runtime libraries needed by Firefox on Debian bookworm.
 # Listed explicitly (instead of relying on `playwright install-deps`) so the
 # image is reproducible and doesn't pull in Chromium/WebKit deps.
@@ -59,12 +65,12 @@ RUN apt-get update \
 
 WORKDIR /app
 
-# Install dependencies first for layer caching.
-COPY package.json package-lock.json ./
 ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
-# Firefox is one binary (no headless-shell variant like Chromium). We install
-# Firefox only; WebKit/Chromium are explicitly skipped.
-RUN npm ci --omit=dev \
+# Install Playwright at the pinned version (independent of any package.json).
+# `--no-save` because there is no package.json in this image — we don't want
+# to create one. `--omit=dev` skips Playwright's own dev tooling.
+# Firefox is one binary (no headless-shell variant like Chromium).
+RUN npm install "playwright@${PLAYWRIGHT_VERSION}" --no-save --omit=dev \
  && npx playwright install firefox
 
 COPY entrypoint.sh /app/entrypoint.sh
