@@ -36,6 +36,6 @@ jobs:
         with:
           context: ./packages/${{ matrix.package }}
           file: ./packages/${{ matrix.package }}/Dockerfile
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/simple-browser-manager-${{ matrix.package }}:latest
+          tags: ${{ env.REGISTRY }}/${{ lower(env.IMAGE_OWNER) }}/simple-browser-manager-${{ matrix.package }}:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
