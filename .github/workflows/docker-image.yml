@@ -38,6 +38,9 @@ jobs:
         with:
           context: ./packages/${{ matrix.package }}
           file: ./packages/${{ matrix.package }}/Dockerfile
+          push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/simple-browser-manager-${{ matrix.package }}:latest
+          labels: |
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
