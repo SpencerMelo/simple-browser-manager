@@ -6,7 +6,9 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_OWNER: ${{ github.repository_owner }}
+  # ghcr.io requires fully lowercase paths; github.repository_owner preserves
+  # case, so we hardcode the lowercase form here.
+  IMAGE_OWNER: spencermelo
 
 jobs:
   build:
@@ -36,6 +38,6 @@ jobs:
         with:
           context: ./packages/${{ matrix.package }}
           file: ./packages/${{ matrix.package }}/Dockerfile
-          tags: ${{ env.REGISTRY }}/${{ lower(env.IMAGE_OWNER) }}/simple-browser-manager-${{ matrix.package }}:latest
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/simple-browser-manager-${{ matrix.package }}:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
