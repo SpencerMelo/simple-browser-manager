@@ -1,0 +1,10 @@
+services:
+  chromium:
+    build: .
+    image: simple-browser-manager-chromium:latest
+    container_name: simple-browser-manager-chromium
+    restart: unless-stopped
+    ports:
+      - "${PORT:-3000}:${PORT:-3000}"
+    environment:
+      - PORT=${PORT:-3000}

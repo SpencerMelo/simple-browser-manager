@@ -1,0 +1,20 @@
+services:
+  chromium:
+    build: ./packages/chromium
+    image: simple-browser-manager-chromium:latest
+    container_name: simple-browser-manager-chromium
+    restart: unless-stopped
+    ports:
+      - "${CHROMIUM_PORT:-3000}:${CHROMIUM_PORT:-3000}"
+    environment:
+      - PORT=${CHROMIUM_PORT:-3000}
+
+  firefox:
+    build: ./packages/firefox
+    image: simple-browser-manager-firefox:latest
+    container_name: simple-browser-manager-firefox
+    restart: unless-stopped
+    ports:
+      - "${FIREFOX_PORT:-4000}:${FIREFOX_PORT:-4000}"
+    environment:
+      - PORT=${FIREFOX_PORT:-4000}

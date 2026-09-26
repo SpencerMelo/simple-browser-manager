@@ -1,0 +1,18 @@
+{
+  "name": "@simple-browser-manager/firefox",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "client": "node examples/client.mjs",
+    "build": "./scripts/build.sh",
+    "run": "./scripts/run.sh",
+    "smoke": "./scripts/smoke.sh"
+  },
+  "dependencies": {
+    "playwright": "1.49.1"
+  }
+}
