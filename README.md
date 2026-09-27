@@ -42,7 +42,7 @@ The `chromium` and `firefox` packages are **fully independent** deployable artif
 
 ## Where the Playwright version is set
 
-**Per Docker package, via the `PLAYWRIGHT_VERSION` ARG in each Dockerfile** (currently `1.49.1`). The Docker packages have **no `package.json`** — Playwright is installed at build time with `npm install playwright@${PLAYWRIGHT_VERSION} --no-save`. To bump:
+**Per Docker package, via the `PLAYWRIGHT_VERSION` ARG in each Dockerfile** (currently `1.63.0`). The Docker packages have **no `package.json`** — Playwright is installed at build time with `npm install playwright@${PLAYWRIGHT_VERSION} --no-save`. To bump:
 
 ```sh
 # Edit the default ARG in packages/chromium/Dockerfile and packages/firefox/Dockerfile,
@@ -50,7 +50,7 @@ The `chromium` and `firefox` packages are **fully independent** deployable artif
 docker build --build-arg PLAYWRIGHT_VERSION=1.55.0 -t simple-browser-manager-chromium:1.55.0 packages/chromium
 ```
 
-The `end-to-end` package pins its **client** Playwright version in its own `package.json` (currently `1.49.1`). It must match the server's minor — patches within a minor are interchangeable. If you bump the Dockerfiles' `PLAYWRIGHT_VERSION`, bump `end-to-end`'s `package.json` and run `npm install`.
+The `end-to-end` package pins its **client** Playwright version in its own `package.json` (currently `1.63.0`). It must match the server's minor — patches within a minor are interchangeable. If you bump the Dockerfiles' `PLAYWRIGHT_VERSION`, bump `end-to-end`'s `package.json` and run `npm install`.
 
 Mismatched clients get a clear error: `HTTP 428 Precondition Required: Playwright version mismatch`.
 
@@ -109,7 +109,7 @@ import { firefox } from 'playwright';
 await firefox.connect('ws://127.0.0.1:4000/');
 ```
 
-Your app's `playwright` version must match the server's `PLAYWRIGHT_VERSION` at the same minor (currently `^1.49.0`).
+Your app's `playwright` version must match the server's `PLAYWRIGHT_VERSION` at the same minor (currently `^1.63.0`).
 
 ## Per-package docs
 

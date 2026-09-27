@@ -6,7 +6,7 @@
 //   PORT=3000 node firefox/sanity-test.mjs
 //
 // Requires: a firefox container running on $PORT, and this package's
-// playwright (^1.49.0) to match the server's PLAYWRIGHT_VERSION.
+// playwright (^1.63.0) to match the server's PLAYWRIGHT_VERSION.
 
 import { firefox } from 'playwright';
 

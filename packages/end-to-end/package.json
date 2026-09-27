@@ -12,6 +12,6 @@
     "test": "./scripts/test-all.sh"
   },
   "devDependencies": {
-    "playwright": "1.49.1"
+    "playwright": "1.63.0"
   }
 }

@@ -42,7 +42,7 @@ await page.goto('https://example.com');
 console.log(await page.title());
 ```
 
-Your app must install **`playwright` at the same minor version as the server's `PLAYWRIGHT_VERSION`** (patches within a minor are interchangeable). The server currently defaults to `1.49.1`; your client must be `^1.49.0`. Major/minor mismatches return `HTTP 428 Precondition Required`.
+Your app must install **`playwright` at the same minor version as the server's `PLAYWRIGHT_VERSION`** (patches within a minor are interchangeable). The server currently defaults to `1.63.0`; your client must be `^1.63.0`. Major/minor mismatches return `HTTP 428 Precondition Required`.
 
 ## Configuration
 
@@ -60,7 +60,7 @@ PORT=4000 docker compose up -d
 ## What's inside the image
 
 - `node:22-bookworm-slim` base.
-- Playwright **at the version pinned by `PLAYWRIGHT_VERSION`** (default `1.49.1`, set via the Dockerfile `ARG` — independent of any package.json).
+- Playwright **at the version pinned by `PLAYWRIGHT_VERSION`** (default `1.63.0`, set via the Dockerfile `ARG` — independent of any package.json).
 - **Only** `chromium-headless-shell` and `ffmpeg` in `/ms-playwright/`. No Firefox, no WebKit, no full Chromium binary.
 - The Chromium runtime dep set for Debian bookworm (libnss, libatk, libxcomposite, etc.).
 - `tini` as PID 1 for clean signal forwarding.
@@ -109,7 +109,7 @@ This builds the chromium image, starts a container, connects with `chromium.conn
 
 - **"Chromium failed to launch"** — a runtime library is missing. The Dockerfile installs the Debian bookworm Chromium dep set explicitly; if you forked the Dockerfile, re-run `./scripts/build.sh` and confirm the `apt-get install` line succeeded.
 - **Port already in use** — change `PORT` (e.g. `PORT=4000 ./scripts/run.sh`).
-- **Client can't connect / version mismatch** — confirm your app's `playwright` matches the server's minor (currently `^1.49.0`). The server returns `HTTP 428 Playwright version mismatch` on connect failure.
+- **Client can't connect / version mismatch** — confirm your app's `playwright` matches the server's minor (currently `^1.63.0`). The server returns `HTTP 428 Playwright version mismatch` on connect failure.
 - **Plain HTTP shows "Running"** — that's the health marker the server returns to non-WebSocket requests. A WS upgrade returns `101 Switching Protocols`.
 
 ## Limitations / out of scope

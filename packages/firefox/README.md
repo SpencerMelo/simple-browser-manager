@@ -42,7 +42,7 @@ await page.goto('https://example.com');
 console.log(await page.title());
 ```
 
-Your app must install **`playwright` at the same minor version as the server's `PLAYWRIGHT_VERSION`** (patches within a minor are interchangeable). The server currently defaults to `1.49.1`; your client must be `^1.49.0`. Major/minor mismatches return `HTTP 428 Precondition Required`. **Use `firefox.connect(...)`, not `chromium.connect(...)`.**
+Your app must install **`playwright` at the same minor version as the server's `PLAYWRIGHT_VERSION`** (patches within a minor are interchangeable). The server currently defaults to `1.63.0`; your client must be `^1.63.0`. Major/minor mismatches return `HTTP 428 Precondition Required`. **Use `firefox.connect(...)`, not `chromium.connect(...)`.**
 
 ## Configuration
 
@@ -60,12 +60,12 @@ PORT=4000 docker compose up -d
 ## What's inside the image
 
 - `node:22-bookworm-slim` base.
-- Playwright **at the version pinned by `PLAYWRIGHT_VERSION`** (default `1.49.1`, set via the Dockerfile `ARG` — independent of any package.json).
+- Playwright **at the version pinned by `PLAYWRIGHT_VERSION`** (default `1.63.0`, set via the Dockerfile `ARG` — independent of any package.json).
 - **Only** Firefox in `/ms-playwright/firefox-*`. No Chromium, no WebKit.
 - The Firefox runtime dep set for Debian bookworm (libgtk-3, libnss, libpango, libcairo, X11 client libs, Wayland clients, etc.).
 - `tini` as PID 1 for clean signal forwarding.
 
-Final image size: roughly comparable to the Chromium one (~800–900 MB); Firefox's binary itself is smaller (~70 MB) but its GTK/Pango/Cairo dep set is larger than Chromium-headless-shell's.
+Final image size: **~1.07 GB**. Firefox's binary itself is smaller than full Chromium, but its GTK/Pango/Cairo dep set is larger than Chromium-headless-shell's, so the overall image ends up slightly bigger than the Chromium one (~860 MB).
 
 ### Firefox vs Chromium
 
@@ -115,7 +115,7 @@ This builds the firefox image, starts a container, connects with `firefox.connec
 
 - **"Firefox failed to launch"** — a runtime library is missing. The Dockerfile installs the Debian bookworm Firefox dep set explicitly (verified against `ldd` on `libxul.so`); if you forked the Dockerfile, re-run `./scripts/build.sh` and confirm the `apt-get install` line succeeded.
 - **Port already in use** — change `PORT` (e.g. `PORT=4000 ./scripts/run.sh`).
-- **Client can't connect / version mismatch** — confirm your app's `playwright` matches the server's minor (currently `^1.49.0`). Use `firefox.connect(...)`, not `chromium.connect(...)`.
+- **Client can't connect / version mismatch** — confirm your app's `playwright` matches the server's minor (currently `^1.63.0`). Use `firefox.connect(...)`, not `chromium.connect(...)`.
 - **Plain HTTP shows "Running"** — that's the health marker the server returns to non-WebSocket requests. A WS upgrade returns `101 Switching Protocols`.
 
 ## Limitations / out of scope

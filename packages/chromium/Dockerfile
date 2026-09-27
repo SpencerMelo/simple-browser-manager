@@ -5,7 +5,7 @@ FROM node:22-bookworm-slim
 # below or pass `--build-arg PLAYWRIGHT_VERSION=X.Y.Z` at build time.
 # This is the **server's** Playwright version — clients connecting via
 # `chromium.connect()` must share the same minor (^X.Y.0).
-ARG PLAYWRIGHT_VERSION=1.49.1
+ARG PLAYWRIGHT_VERSION=1.63.0
 
 # Runtime libraries needed by Chromium on Debian bookworm.
 # Listed explicitly (instead of relying on `playwright install-deps`) so the

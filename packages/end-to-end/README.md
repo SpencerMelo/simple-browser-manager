@@ -59,9 +59,9 @@ Each test script honors these env vars (defaults shown):
 
 The Playwright version in **this** package.json (`devDependencies.playwright`) is the **client** version. It must match the server version (the `PLAYWRIGHT_VERSION` ARG in the Dockerfiles) at the **same minor** — patches within a minor are interchangeable.
 
-The Dockerfiles currently default to `PLAYWRIGHT_VERSION=1.49.1`, and this package pins `playwright@1.49.1` to match. If you bump the Dockerfiles' `PLAYWRIGHT_VERSION` (e.g. to `1.55.0`), bump it here too:
+The Dockerfiles currently default to `PLAYWRIGHT_VERSION=1.63.0`, and this package pins `playwright@1.63.0` to match. If you bump the Dockerfiles' `PLAYWRIGHT_VERSION` (e.g. to `1.70.0`), bump it here too:
 
-1. Edit `package.json` → change `"playwright": "1.49.1"` to the new version
+1. Edit `package.json` → change `"playwright": "1.63.0"` to the new version
 2. `npm install`
 3. Re-run the tests
 
